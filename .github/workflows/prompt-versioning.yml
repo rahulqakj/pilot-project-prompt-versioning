@@ -10,6 +10,9 @@ on:
       version:
         description: "vX label. Optional for create_new; required for use_existing"
         required: false
+      prompt_content:
+        description: "The full content of the prompt (only for create_new)"
+        required: false
       last_updated_by:
         description: "Who made the change"
         required: true
@@ -40,6 +43,7 @@ jobs:
         env:
           GIT_USER_NAME: github-actions[bot]
           GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
+          PROMPT_CONTENT: ${{ github.event.inputs.prompt_content }}
         run: |
           python scripts/prompt_versioning.py \
             --mode "${{ github.event.inputs.mode }}" \

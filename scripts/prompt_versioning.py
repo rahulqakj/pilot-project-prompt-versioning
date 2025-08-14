@@ -65,7 +65,7 @@ def next_version_label() -> str:
     return f"v{n+1}"
 
 
-def create_new(version: str | None, last_by: str, reason: str) -> str:
+def create_new(version: str | None, last_by: str, reason: str, prompt_content: str | None = None) -> str:
     if version is None:
         version = next_version_label()
     if not VERSION_PATTERN.match(version):
@@ -74,8 +74,11 @@ def create_new(version: str | None, last_by: str, reason: str) -> str:
     if target.exists():
         raise FileExistsError(f"{target} already exists")
 
-    template = TEMPLATE_FILE.read_text() if TEMPLATE_FILE.exists() else "# New Prompt\n\nWrite guidance here.\n"
-    target.write_text(template)
+    if prompt_content:
+        content = prompt_content
+    else:
+        content = TEMPLATE_FILE.read_text() if TEMPLATE_FILE.exists() else "# New Prompt\n\nWrite guidance here.\n"
+    target.write_text(content)
 
     write_meta(version, last_by, reason)
     return version
@@ -114,7 +117,8 @@ def main():
     PROMPTS_DIR.mkdir(parents=True, exist_ok=True)
 
     if args.mode == "create_new":
-        version = create_new(args.version, args.last_by, args.reason)
+        prompt_content = os.getenv("PROMPT_CONTENT")
+        version = create_new(args.version, args.last_by, args.reason, prompt_content)
         msg = f"chore(prompts): create {version} by {args.last_by} — {args.reason}"
         print(msg)
         git_commit_and_push(msg)
