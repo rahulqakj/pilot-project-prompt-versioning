@@ -1,0 +1,48 @@
+name: Prompt Versioning
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "create_new or use_existing"
+        required: true
+        default: create_new
+      version:
+        description: "vX label. Optional for create_new; required for use_existing"
+        required: false
+      last_updated_by:
+        description: "Who made the change"
+        required: true
+      reason:
+        description: "Why the change"
+        required: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Execute prompt versioning
+        env:
+          GIT_USER_NAME: github-actions[bot]
+          GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          python scripts/prompt_versioning.py \
+            --mode "${{ github.event.inputs.mode }}" \
+            $([ -n "${{ github.event.inputs.version }}" ] && echo --version "${{ github.event.inputs.version }}") \
+            --last-updated-by "${{ github.event.inputs.last_updated_by }}" \
+            --reason "${{ github.event.inputs.reason }}"
