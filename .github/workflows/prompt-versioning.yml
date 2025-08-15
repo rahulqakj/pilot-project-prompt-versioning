@@ -13,6 +13,7 @@ on:
       prompt_content:
         description: "The full content of the prompt (only for create_new)"
         required: false
+        type: textarea
       last_updated_by:
         description: "Who made the change"
         required: true
